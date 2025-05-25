@@ -1,47 +1,13 @@
-# Cybersecurity Incident Report: Network Traffic Analysis
+# Cybersecurity Incident Report
 
-## Part 1: Summary of Problem in DNS and ICMP Logs
+## Part 1: Provide a summary of the problem found in the DNS and ICMP traffic log
 
-**The UDP protocol reveals that:**  
-The system attempted to resolve a domain (`yummyrecipesforme.com`) by contacting a DNS server at `203.0.113.2` over UDP port 53.
+The network protocol analyzer logs show multiple attempts to resolve the domain `www.yummyrecipesforme.com` using DNS over UDP port 53. Each attempt received an ICMP response indicating that port 53 was unreachable. Port 53 is standard for handling DNS queries, and an “unreachable” response typically points to issues such as a service outage, firewall restrictions, or a misconfiguration. This behavior suggests that the DNS requests could not be delivered, preventing the website from loading for users.
 
-**ICMP response indicates:**  
-Each DNS query resulted in an ICMP error message: `"udp port 53 unreachable"`.
+## Part 2: Explain your analysis of the data and provide at least one cause of the incident
 
-**Port 53 is used for:**  
-Handling DNS queries over UDP.
+The issue was initially reported around 1:24 PM when multiple clients indicated that they were unable to access the website `www.yummyrecipesforme.com`, receiving a “destination port unreachable” error. Follow-up attempts at 1:26 PM and 1:28 PM resulted in the same error. 
 
-**Most likely issue:**  
-DNS server at `203.0.113.2` is either down, misconfigured, or UDP requests are blocked (e.g., firewall filtering).
+The network security team responded by capturing traffic using `tcpdump` while trying to access the site. The analysis of the captured logs confirmed that DNS queries sent over UDP port 53 did not reach the DNS server. Instead, ICMP error messages were returned, indicating that port 53 was unreachable. 
 
----
-
-## Part 2: Incident Analysis
-
-**Time incident occurred:**  
-- First attempt: `13:24:32`
-- ICMP error received: `13:24:36`
-- Repeated attempts every ~2 minutes
-
-**How IT became aware:**  
-Users reported an inability to access external websites using hostnames.
-
-**Actions taken:**  
-- Performed `tcpdump` network capture
-- Identified multiple outbound DNS queries to `203.0.113.2`
-- Observed no DNS responses, only ICMP error messages
-
-**Key findings:**  
-- DNS queries sent over UDP port 53
-- No successful responses
-- ICMP indicates the port is unreachable
-
-**Likely cause of incident:**  
-The DNS server may be offline, improperly configured, or filtering UDP traffic on port 53.
-
----
-
-### Recommendations
-
-- Check Firewall for UDP port 53 is open
-- Check DNS service status on 203.0.113.2
+One possible explanation is that a firewall is blocking outbound DNS requests or that there is a misconfiguration on the DNS server or intermediary network devices. Next steps include checking the firewall settings, verifying the DNS server’s availability, and collaborating with system administrators to rule out service outages or unauthorized configuration changes.
